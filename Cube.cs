@@ -10,6 +10,9 @@ public class Cube : MonoBehaviour
     private Vector3 startPosition;
     public float riseAmplitude = 0.7f; // Height of rise/fall.
     public float riseFrequency = 2.0f; // How often the rise/fall happens.
+    public float baseSpinSpeed = 180.0f; 
+    public float apexSpinMultiplier = 5.0f; // Increase speed at apex.
+    public float apexThreshold = 0.1f; // How close to the apex to apply the multiplier.
 
     void Start()
     {
@@ -30,13 +33,25 @@ public class Cube : MonoBehaviour
 
     void Update()
     {
+        //Calculate the rise offset using sine for rise/fall.
+        float riseOffset = Mathf.Sin(Time.time * Mathf.PI*2.0f*riseFrequency)*riseAmplitude;
+
+        //Determine how close we are to the apex (normalized to a range of -1 to 1).
+        float normalizedHeight = Mathf.Sin(Time.time*Mathf.PI*2.0f*riseFrequency);
+        float currentSpinSpeed = baseSpinSpeed;
+
+        //Check if near top of the movement.
+        if (normalizedHeight >= (1.0f - apexThreshold))
+        {
+            currentSpinSpeed *= apexSpinMultiplier; // Increase speed at apex.
+        }
+
         //Increment spin angle over time.
-        spinAngle += 360.0f * Time.deltaTime;
+        spinAngle += currentSpinSpeed * Time.deltaTime;
 
         //Apply spinning 
         transform.rotation = initialRotation * Quaternion.Euler(0.0f, spinAngle, 0.0f);
 
-        float riseOffset = Mathf.Sin(Time.time * Mathf.PI*2.0f*riseFrequency)*riseAmplitude;
 
         transform.position = new Vector3(startPosition.x, startPosition.y+riseOffset, startPosition.z);
     }
